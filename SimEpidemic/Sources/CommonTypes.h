@@ -29,6 +29,11 @@ typedef enum {
 	WarpInside, WarpToHospital, WarpToCemeteryF, WarpToCemeteryH, WarpBack
 } WarpType;
 
+typedef enum {
+	LoopNone, LoopRunning, LoopFinished, LoopEndByUser,
+	LoopEndByCondition, LoopEndAsDaysPassed
+} LoopMode;
+
 typedef struct {
 	CGFloat min, max, mode;
 } DistInfo;
@@ -79,6 +84,7 @@ typedef struct AgentRec {
 	CGFloat daysInfected, daysDiseased;
 	CGFloat daysToRecover, daysToOnset, daysToDie, imExpr;
 	HealthType health, newHealth;
+	int nInfects, newNInfects;
 	BOOL distancing, isOutOfField, isWarping, gotAtHospital;
 	NSInteger lastTested;
 	struct AgentRec *best;
