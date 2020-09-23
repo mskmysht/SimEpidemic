@@ -1,0 +1,98 @@
+@startuml class_diagram
+
+class Document {
+  + _runtimeParams: RuntimeParams
+  + _initParams: RuntimeParams
+  + _worldParams: WorldParams
+  + _tmpWorldParams: WorldParams
+  + _popLock: Lock *
+  + _statInfo: StatInfo *
+  + «get» Pop: Agent **
+  + «get» QList: Agent *
+  + «get» CList: Agent *
+  + «get» WrapList: MutableArray<WrapInfo *> *
+  + «get» CListP: Agent **
+  + «get» QListP: Agent **
+  + «get» runtimeParamsP: RuntimeParams *
+  + «get» initParamsP: RuntimeParams *
+  + «get» worldParamsP: WorldParams *
+  + «get» tmpWorldParamsP: WorldParams *
+  + running(): Bool
+  + popLock(): void
+  + popUnlock(): void
+  + «get» RecovPHist: MutableArray<MyCounter *> *
+  + «get» IncubPHist: MutableArray<MyCounter *> *
+  + «get» DeathPHist: MutableArray<MyCounter *> *
+  + «get» scenario: Array<any> *
+  + testInfectionOfAgent(agent: Agent *, reason: TestType): void
+  + addNewWarp(info: WarpInfo *): void
+  + «get» ID: String *
+  + «get» lastTLock: Lock *
+  + «get/set» lastTouch: Date *
+  + «get/set» docKey: Number *
+  + «get/set» stopCallBack: LoopMode -> void
+  + touch(): Bool
+  + start(stopAt: Integer): void
+  + step(): void
+  + stop(): void
+  + resetPop(): void
+  + «get» statInfo: StatInfo *
+  + «get» scenarioPList: Array<any> *
+  + setScenarioWithPList(plist: Array<any>*): void
+	- scenarioIndex: NSInteger
+	- scenarioPanel: Scenario *
+	- paramPanel: ParamPanel *
+	- dataPanel: DataPanel *
+	- loopMode: LoopMode
+	- nPop: NSInteger
+  - nMesh: NSInteger
+	- pop: Agent **
+	- pRange: NSRange *
+	- prevTime: CGFloat
+  - stepsPerSec: CGFloat
+	- newWarpF: NSMutableDictionary<NSNumber *, WarpInfo *> *
+	- testees: NSMutableDictionary<NSNumber *, NSNumber *> *
+	- newWarpLock: NSLock *
+	- testeesLock: NSLock *
+	- animeSteps: NSInteger 
+  - stopAtNDays: NSInteger
+	- scenario: NSArray *
+	- predicateToStop: NSPredicate *
+	- testQueHead: TestEntry *
+	- testQueTail: TestEntry *
+	- dispatchQueue: dispatch_queue_t
+	- dispatchGroup: dispatch_group_t
+	- orgWindowSize: NSSize
+	- orgViewSize: NSSize
+	- runtimeTimer: NSTimer *
+  - addOperation(block: void -> void): void
+  - waitAllOperations(): void
+  - addInfected(n: Integer): void
+  - execScenario(): void
+  {static} phase_info(scen: Array<any> *): Array<Number *> *
+  - resetPop(): void
+  - init(): instancetype
+  {static} property_from_element(elm: Object *): Object *
+  {static} element_property_from(prop: Object *): Object *
+  - scenarioPList(): Array<any> *
+  - documentDictionary(): Dictionary *
+  - readFromDictionary(dict: Dictionary *)
+  {static} testEntriesLock: Lock *
+  - deliverTestResults(testCount: NSUInteger *): void
+  - gridToGridA(iA: Integer, iB: Integer): void
+  ' {static} N_MTIME: int
+  ' {static} mtime: unsigned long[]
+  ' {static} mCount: Integer
+  ' {static} mCount2: Integer
+  - doOneStep(): void
+  - runningLoop(): void
+  - goAhead(): void
+}
+
+class WarpInfo {
+  + agent; Agent *
+  + goal: Point
+  + mode: WarpType
+  + initWithAgent(a: Agent *, p :Point, md: WarpType): instancetype
+}
+@enduml
