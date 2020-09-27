@@ -39,32 +39,32 @@ class Document {
   + «get» statInfo: StatInfo *
   + «get» scenarioPList: Array<any> *
   + setScenarioWithPList(plist: Array<any>*): void
-	- scenarioIndex: NSInteger
-	- scenarioPanel: Scenario *
-	- paramPanel: ParamPanel *
-	- dataPanel: DataPanel *
-	- loopMode: LoopMode
-	- nPop: NSInteger
-  - nMesh: NSInteger
-	- pop: Agent **
-	- pRange: NSRange *
-	- prevTime: CGFloat
-  - stepsPerSec: CGFloat
-	- newWarpF: NSMutableDictionary<NSNumber *, WarpInfo *> *
-	- testees: NSMutableDictionary<NSNumber *, NSNumber *> *
-	- newWarpLock: NSLock *
-	- testeesLock: NSLock *
-	- animeSteps: NSInteger 
-  - stopAtNDays: NSInteger
-	- scenario: NSArray *
-	- predicateToStop: NSPredicate *
-	- testQueHead: TestEntry *
-	- testQueTail: TestEntry *
-	- dispatchQueue: dispatch_queue_t
-	- dispatchGroup: dispatch_group_t
-	- orgWindowSize: NSSize
-	- orgViewSize: NSSize
-	- runtimeTimer: NSTimer *
+  - scenarioIndex: Integer
+  - scenarioPanel: Scenario *
+  - paramPanel: ParamPanel *
+  - dataPanel: DataPanel *
+  - loopMode: LoopMode
+  - nPop: Integer
+  - nMesh: Integer
+  - pop: Agent **
+  - pRange: Range *
+  - prevTime: Float
+  - stepsPerSec: Float
+  - newWarpF: MutableDictionary<Number *, WarpInfo *> *
+  - testees: MutableDictionary<Number *, Number *> *
+  - newWarpLock: Lock *
+  - testeesLock: Lock *
+  - animeSteps: Integer 
+  - stopAtNDays: Integer
+  - scenario: Array *
+  - predicateToStop: Predicate *
+  - testQueHead: TestEntry *
+  - testQueTail: TestEntry *
+  - dispatchQueue: dispatch_queue_t
+  - dispatchGroup: dispatch_group_t
+  - orgWindowSize: Size
+  - orgViewSize: Size
+  - runtimeTimer: Timer *
   - addOperation(block: void -> void): void
   - waitAllOperations(): void
   - addInfected(n: Integer): void
@@ -78,7 +78,7 @@ class Document {
   - documentDictionary(): Dictionary *
   - readFromDictionary(dict: Dictionary *)
   {static} testEntriesLock: Lock *
-  - deliverTestResults(testCount: NSUInteger *): void
+  - deliverTestResults(testCount: UInteger *): void
   - gridToGridA(iA: Integer, iB: Integer): void
   ' {static} N_MTIME: int
   ' {static} mtime: unsigned long[]
@@ -95,4 +95,173 @@ class WarpInfo {
   + mode: WarpType
   + initWithAgent(a: Agent *, p :Point, md: WarpType): instancetype
 }
+
+class TableCellView
+class ButtonsCellView
+
+TableCellView <|-- ParameterCellView
+class ParameterCellView {
+  + «get» namePopUp: PopUpButton *
+  + «get» digits: TextField *
+}
+
+class ScenarioItem {
+  + scenario: Scenario *
+  + «get/set» view: TableCellView
+  + «get» lnView: TableCellView
+  + «get» btnsView: ButtonsCellView
+  + buttonAction(button: Button *): void
+}
+
+ScenarioItem <|-- CondElmItem
+class CondElmItem {
+  + «get/set» parent: ScenarioItem *
+}
+
+CondElmItem <|-- ComparisonItem
+class ComparisonItem {
+  + varIndex: Integer
+  + opeIndex: Integer
+  + maxValue: Integer
+  + ratioValue: Float
+  + days: Integer
+}
+
+CondElmItem <|-- CompoundItem
+class CompoundItem {
+  + «get/set» children: MutableArray<CondElmItem *> *
+  + replaceChildAtIndex(index: Integer, newChild: CondElmItem *): void
+}
+
+CondItem <|-- ScenarioItem
+class CondItem {
+  + condType: CondType
+  + destination: Integer
+  + «get/set» element: CondElmItem *
+  + «get/set» predicate: Predicate *
+  + replaceElementWithItem(newElement: CondElmItem *): void
+}
+
+class WindowController
+WindowController <|-- Scenario
+class Scenario {
+  + shiftUpBtn: Button *
+  + shiftDownBtn: Button *
+  + deselectBtn: Button *
+  + removeBtn: Button *
+  + applyBtn: Button *
+  + «get/set» outlineView: OutlineView *
+  + «get» doc: Document *
+  + «get» undoManager: UndoManager *
+  + «get» intFormatter: NumberFormatter *
+  + initWithDoc(dc: Document *): instancetype
+  + adjustControls(undoOrRedo: BOOL): void
+  + numberOfItems(): Integer
+  + removeItem(item: ScenarioItem *): void
+  + itemWithPredicate(predicate: Predicate *, parent: ScenarioItem *): CondElmItem *
+  + setScenarioWithArray(array: Array<any> *): void
+}
+
+class MyCounter {
+  + «get/set» cnt: Integer
+  + inc(): void
+  + dec(): void
+  - init(): instancetype
+  - description(): String *
+}
+
+class InfectionCntInfo <<struct>> {
+  + orgV: int
+  + newV: int
+}
+
+class InfectionExtension {
+  + valueWithInfect(info: InfectionCntInfo): Value *
+  - infectValue(): InfectionCntInfo
+}
+
+class StatInfo {
+  + _doc: Document *
+  + maxCounts: UInteger[NIntIndexes]
+  + maxTransit: UInteger[NIntIndexes]
+  + imgBm: unsigned char *
+  + popSize: Integer
+  + steps: Integer
+  + skip: Integer
+  + days: Integer
+  + skipDays: Integer
+  + statCumm: StatData
+  + transDaily: StatData
+  + transCumm: StatData
+  + testCumm: UInteger[NIntTestTypes]
+  + testResultsW: TestResultCount[7]
+  + maxStepPRate: Float
+  + maxDailyPRate: Float
+  + pRateCumm: Float
+  + phaseInfo: NSArray<NSNumber *> *
+  + scenarioPhases: MutableArray<NSNumber *> *
+  + «get» scenarioPhases: MutableArray<NSNumber *> *
+  + «get» statistics: StatData *
+  + «get» transit: StatData *
+  + «get» testResultCnt: TestResultCount
+  + «get» IncubPHist: MutableArray<MyCounter *> *
+  + «get» RecovPHist: MutableArray<MyCounter *> *
+  + «get» DeathPHist: MutableArray<MyCounter *> *
+  + «get» NInfectsHist: MutableArray<MyCounter *> *
+  + doc(): Document *
+  + reviseColors(): void
+  + reset(nPop : NSInteger, nInitInfec, :NSInteger): void
+  + setPhaseInfo(info: Array<NSNumber *> *): void
+  + phaseChangedTo(lineNumber: Integer): void
+  + calcStatWithTestCount(testCount: UInteger *, infects: NSArray<NSArray<NSValue *> *> *): BOOL
+  + skipSteps(): Integer
+  + skipDays(): Integer
+  + setDoc(doc: Document *): void
+  - init(): instancetype
+  - setDoc(docu: Document *): void
+  - fillImageForOneStep(stat: StatData *, ix: Integer): void
+  - susceptible(): Integer
+  - infected(): Integer
+  - symptomatic(): Integer
+  - recovered(): Integer
+  - died(): Integer
+  - quarantine(): Integer
+  - dailyInfection(): Integer
+  - dailySymptomatic(): Integer
+  - dailyRecovery(): Integer
+  - dailyDeath(): Integer
+  - weeklyPositive(): Integer
+  - weeklyPositiveRate(): Float
+}
+
+enum ParamType {
+  ParamTypeNone
+  ParamTypeFloat
+  ParamTypeFloatS
+  ParamTypeDist
+  ParamTypeInteger
+}
+
+class S<T> {
+  + defaultValue: T
+  + minValue: T
+  + maxValue: T
+}
+
+class St {
+  defMin: Float
+  defMode: Float
+  defMax: Float
+}
+
+class ParamInfo <<struct>> {
+  + type: ParamType
+  + key: String
+  + v: S<Float> | St | S<Integer>
+}
+
+class AppDelegate {
+  - applicationWillFinishLaunching(aNotification: Notification *): void
+}
+
 @enduml
