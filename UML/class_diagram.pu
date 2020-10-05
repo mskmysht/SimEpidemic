@@ -1,5 +1,369 @@
 @startuml class_diagram
 
+NoGUI <-- AppDelegate
+NoGUI <-- ProcContext
+NoGUI o-- "0.." Document
+class NoGUI <<(S, Orange) Singleton >> {
+  + infoDictionary: MutableDictionary<String *, id> *
+  + defaultDocuments: MutableDictionary<Number *, Document *> *
+  + theDocuments: MutableDictionary<String *, Document *> *
+  - {static} main(argc: int, argv[]: char *): int
+  - {static} connection_thread(): void
+  - {static} interaction_thread(desc: int, ipaddr: uint32): void
+}
+
+enum ParamType {
+  ParamTypeNone
+  ParamTypeFloat
+  ParamTypeFloatS
+  ParamTypeDist
+  ParamTypeInteger
+}
+
+class S<T> {
+  + defaultValue: T
+  + minValue: T
+  + maxValue: T
+}
+
+class St {
+  defMin: Float
+  defMode: Float
+  defMax: Float
+}
+
+ParamInfo o-- ParamType
+ParamInfo o-- S
+ParamInfo o-- St
+class ParamInfo <<struct>> {
+  + type: ParamType
+  + key: String
+  + v: S<Float> | St | S<Integer>
+}
+
+AppDelegate o-- "0.." ParamInfo
+class AppDelegate {
+  - applicationWillFinishLaunching(aNotification: Notification *): void
+  - {static} paramInfo: ParamInfo[]
+}
+
+class TableCellView
+class ButtonsCellView
+
+TableCellView <|-- ParameterCellView
+class ParameterCellView {
+  + «get» namePopUp: PopUpButton *
+  + «get» digits: TextField *
+}
+
+class WindowController
+
+WindowController <|-- Scenario
+Scenario o-- Document
+Scenario <-[dashed] ScenarioItem
+Scenario <-[dashed]- CondElmItem
+class Scenario {
+  + shiftUpBtn: Button *
+  + shiftDownBtn: Button *
+  + deselectBtn: Button *
+  + removeBtn: Button *
+  + applyBtn: Button *
+  + «get/set» outlineView: OutlineView *
+  + «get» doc: Document *
+  + «get» undoManager: UndoManager *
+  + «get» intFormatter: NumberFormatter *
+  + initWithDoc(dc: Document *): Scenario
+  + adjustControls(undoOrRedo: BOOL): void
+  + numberOfItems(): Integer
+  + removeItem(item: ScenarioItem *): void
+  + itemWithPredicate(predicate: Predicate *, parent: ScenarioItem *): CondElmItem *
+  + setScenarioWithArray(array: Array<any> *): void
+}
+
+ScenarioItem o-- Scenario
+ScenarioItem o-- TableCellView
+ScenarioItem o-- ButtonsCellView
+CondItem <|- ScenarioItem
+class ScenarioItem {
+  + scenario: Scenario *
+  + «get/set» view: TableCellView
+  + «get» lnView: TableCellView
+  + «get» btnsView: ButtonsCellView
+  + buttonAction(button: Button *): void
+}
+
+ScenarioItem <|-- CondElmItem
+class CondElmItem {
+  + «get/set» parent: ScenarioItem *
+}
+
+ComparisonItem o-- "0.." VariableType
+ComparisonItem <-[dashed]- Scenario
+ComparisonItem <-[dashed]- ScenarioItem
+CondElmItem <|-- ComparisonItem
+class ComparisonItem {
+  + varIndex: Integer
+  + opeIndex: Integer
+  + maxValue: Integer
+  + ratioValue: Float
+  + days: Integer
+  - {static} varTypes: VariableType[]
+  - initWithScenario(scen: Scenario *, parnt: ScenarioItem *): ComparisonItem
+  - predicate(): Predicate *
+  - adjustValueAndUnit(): void
+  - setupWithPredicate(predicate: ComparisonPredicate *): void
+  - intValue(): Integer
+  - setIntValue(val: Integer): void
+  - chooseUnit(sender: id): void
+  - chooseOperation(sender: id): void
+  - chooseVariable(sender: id): void
+  - setDays(newDays: Integer, digits: TextField *): void
+  - setNIndividuals(newRatio: Float, digits: TextField *): void
+  - setRatio(newRatio: Float, digits: TextField *): void
+  - controlTextDidEndEditing(obj: Notification *): void
+}
+
+CompoundItem o-- "0.." CondElmItem
+CondElmItem <|-- CompoundItem
+class CompoundItem {
+  + «get/set» children: MutableArray<CondElmItem *> *
+  + replaceChildAtIndex(index: Integer, newChild: CondElmItem *): void
+}
+
+enum CondType {
+  CondTypeRunUntil
+  CondTypeMoveWhen
+}
+
+enum VariableType {
+  VarAbsolute
+  VarNIndividuals
+  VarRate
+}
+
+CondItem o-- CondType
+CondItem o-- CondElmItem
+class CondItem {
+  + condType: CondType
+  + destination: Integer
+  + «get/set» element: CondElmItem *
+  + «get/set» predicate: Predicate *
+  + replaceElementWithItem(newElement: CondElmItem *): void
+}
+
+class MyCounter {
+  + «get/set» cnt: Integer
+  + inc(): void
+  + dec(): void
+  - init(): MyCounter
+  - description(): String *
+}
+
+class Value
+
+Value <|-- InfectionExtension
+InfectionExtension o-- InfectionCntInfo
+class InfectionExtension {
+  + valueWithInfect(info: InfectionCntInfo): Value *
+  - infectValue(): InfectionCntInfo
+}
+
+class InfectionCntInfo <<struct>> {
+  + orgV: int
+  + newV: int
+}
+
+ContactInfo o- ContactInfo
+class ContactInfo <<struct>> {
+  + prev: ContactInfo *
+  + next: ContactInfo *
+  + timeStamp: Integer
+  + agent: ContactInfo *
+}
+
+Agent o-- ContactInfo
+class Agent <<struct>> {
+  + ID: Integer
+  + prev: Agent *
+  + next: Agent *
+  + app: Float 
+  + prf: Float 
+  + x: Float 
+  + y: Float 
+  + vx: Float 
+  + vy: Float 
+  + fx: Float 
+  + fy: Float 
+  + orgPt: Point
+  + daysInfected: Float
+  + daysDiseased: Float
+  + daysToRecover: Float
+  + daysToOnset: Float
+  + daysToDie: Float
+  + imExpr: Float
+  + health: HealthType
+  + newHealth: HealthType
+  + nInfects: int
+  + newNInfects: int
+  + distancing: BOOL
+  + isOutOfField: BOOL
+  + isWarping: BOOL
+  + gotAtHospital: BOOL
+  + lastTested: Integer
+  + best: Agent *
+  + bestDist: Float
+  + contactInfoHead: ContactInfo *
+  + *contactInfoTail: ContactInfo *
+}
+
+class WorldParams <<struct>> {
+  + initPop: Integer
+  + worldSize: Integer
+  + mesh: Integer
+  + nInitInfec: Integer
+  + stepsPerDay: Integer
+}
+
+RuntimeParams o-- DistInfo
+class RuntimeParams <<struct>> {
+  ' infection probability and distance
+  + infec: Float 
+  + infecDst: Float 
+  ' Distancing strength and obedience
+  + dstST: Float
+  + dstOB: Float
+  ' Mobility frequency
+  + mobFr: Float
+  ' Contact tracing
+  + cntctTrc: Float
+  ' test delay, process, interval, sensitivity, and specificity
+  + tstDelay: Float
+  + tstProc: Float
+  + tstInterval: Float
+  + tstSens: Float
+  + tstSpec: Float
+  ' Subjects for test of asymptomatic, and symptomatic. contacts are tested 100%.
+  + tstSbjAsy: Float
+  + tstSbjSym: Float
+  ' and distance
+  + mobDist: DistInfo 
+  ' incubation, fatality, recovery, immunity
+  + incub: DistInfo
+  + fatal: DistInfo
+  + recov: DistInfo
+  + immun: DistInfo
+  + step: Integer
+}
+
+class DistInfo <<struct>> {
+  + min: Float
+  + max: Float
+  + mode: Float
+}
+
+class TestResultCount <<struct>> {
+  + positive: UInteger
+  + negative: UInteger
+}
+
+class TestEntry <<struct>> {
+  + prev: TestEntry *
+  + next: TestEntry *
+  + timeStamp: Integer
+  + isPositive: BOOL
+  + agent: TestEntry *
+}
+
+enum WarpType {
+  WarpInside
+  WarpToHospital 
+  WarpToCemeteryF
+  WarpToCemeteryH
+  WarpBack
+}
+
+WarpInfo o-- WarpType
+class WarpInfo {
+  + agent; Agent *
+  + goal: Point
+  + mode: WarpType
+  + initWithAgent(a: Agent *, p :Point, md: WarpType): WarpInfo
+}
+
+enum LoopMode {
+	LoopNone
+  LoopRunning
+  LoopFinished
+  LoopEndByUser
+	LoopEndByCondition
+  LoopEndAsDaysPassed
+}
+
+StatInfo <-[dashed]- InfectionExtension
+StatInfo "1" o-- "0.." MyCounter
+StatInfo o-- TestResultCount
+class StatInfo {
+  + _doc: Document *
+  + maxCounts: UInteger[NIntIndexes]
+  + maxTransit: UInteger[NIntIndexes]
+  + imgBm: unsigned char *
+  + popSize: Integer
+  + steps: Integer
+  + skip: Integer
+  + days: Integer
+  + skipDays: Integer
+  + statCumm: StatData
+  + transDaily: StatData
+  + transCumm: StatData
+  + testCumm: UInteger[NIntTestTypes]
+  + testResultsW: TestResultCount[7]
+  + maxStepPRate: Float
+  + maxDailyPRate: Float
+  + pRateCumm: Float
+  + phaseInfo: Array<Number *> *
+  + scenarioPhases: MutableArray<Number *> *
+  + «get» scenarioPhases: MutableArray<Number *> *
+  + «get» statistics: StatData *
+  + «get» transit: StatData *
+  + «get» testResultCnt: TestResultCount
+  + «get» IncubPHist: MutableArray<MyCounter *> *
+  + «get» RecovPHist: MutableArray<MyCounter *> *
+  + «get» DeathPHist: MutableArray<MyCounter *> *
+  + «get» NInfectsHist: MutableArray<MyCounter *> *
+  + doc(): Document *
+  + reviseColors(): void
+  + reset(nPop : Integer, nInitInfec, :Integer): void
+  + setPhaseInfo(info: Array<Number *> *): void
+  + phaseChangedTo(lineNumber: Integer): void
+  + calcStatWithTestCount(testCount: UInteger *, infects: Array<Array<InfectionExtension *> *> *): BOOL
+  + skipSteps(): Integer
+  + skipDays(): Integer
+  + setDoc(doc: Document *): void
+  - init(): StatInfo
+  - setDoc(docu: Document *): void
+  - fillImageForOneStep(stat: StatData *, ix: Integer): void
+  - susceptible(): Integer
+  - infected(): Integer
+  - symptomatic(): Integer
+  - recovered(): Integer
+  - died(): Integer
+  - quarantine(): Integer
+  - dailyInfection(): Integer
+  - dailySymptomatic(): Integer
+  - dailyRecovery(): Integer
+  - dailyDeath(): Integer
+  - weeklyPositive(): Integer
+  - weeklyPositiveRate(): Float
+}
+
+Document o-- RuntimeParams
+Document o-- WorldParams
+Document "1" - "1" StatInfo
+Document o-- Agent
+Document "1" o-- "0.." WarpInfo
+Document "1" o-- "0.." MyCounter
+Document o-- LoopMode
+Document o-- TestEntry
 class Document {
   + _runtimeParams: RuntimeParams
   + _initParams: RuntimeParams
@@ -69,17 +433,17 @@ class Document {
   - waitAllOperations(): void
   - addInfected(n: Integer): void
   - execScenario(): void
-  {static} phase_info(scen: Array<any> *): Array<Number *> *
   - resetPop(): void
-  - init(): instancetype
-  {static} property_from_element(elm: Object *): Object *
-  {static} element_property_from(prop: Object *): Object *
+  - init(): Document
   - scenarioPList(): Array<any> *
   - documentDictionary(): Dictionary *
   - readFromDictionary(dict: Dictionary *)
-  {static} testEntriesLock: Lock *
   - deliverTestResults(testCount: UInteger *): void
   - gridToGridA(iA: Integer, iB: Integer): void
+  - {static} phase_info(scen: Array<any> *): Array<Number *> *
+  - {static} property_from_element(elm: Object *): Object *
+  - {static} element_property_from(prop: Object *): Object *
+  - {static} testEntriesLock: Lock *
   ' {static} N_MTIME: int
   ' {static} mtime: unsigned long[]
   ' {static} mCount: Integer
@@ -89,179 +453,90 @@ class Document {
   - goAhead(): void
 }
 
-class WarpInfo {
-  + agent; Agent *
-  + goal: Point
-  + mode: WarpType
-  + initWithAgent(a: Agent *, p :Point, md: WarpType): instancetype
+Document <-[dashed]- ProcContext
+class ProcContext {
+  + desc: int
+  + code: int
+  + ip4addr: Number *
+  + document: Document *
+  ' buffer to receive
+  + bufData: MutableData *
+  + dataLength: long
+  + query: Dictionary<String *, String *> *
+  + method: String *
+  + type: String *
+  + moreHeader: String *
+  + content: Object *
+  + fileSize: Integer
+  - initWithSocket(desc: int, ipaddr: uint32): ProcContext
+  - receiveData(length: Integer): long
+  - notImplementedYet(): void
+  - makeResponse(): void
+  - sendHeader(): Integer
+  - sendData(): Integer
+  - notImplementedYet(): void
+  - setErrorMessage(msg String *): void
+  - setOKMessage(): void
+  - respondFile(path: String *): void
+  - makeResponse(): void
+  - checkDocument(): void
+  - JSONOptions(): UInteger
+  - setJSONDataAsResponse(object: Object *): void
+  - getInfo(plist: Object *): void
+  - setWorldIDAsResponse(): void
+  - getWorldID(): void
+  - newWorld(): void
+  - closeWorld(): void
+  - getParams(): void
+  - setParams(): void
+  - start(): void
+  - step(): void
+  - stop(): void
+  - reset(): void
+  - collectNamesInto(nameSet: MutableSet *): void
+  - getIndexes(): void
+  - getDistribution(): void
+  - getPopulation(): void
+  - getScenario(): void
+  - setScenario(): void
+  + {static} make_new_world(type: String *, ip4addr: Number *): Document *
 }
 
-class TableCellView
-class ButtonsCellView
-
-TableCellView <|-- ParameterCellView
-class ParameterCellView {
-  + «get» namePopUp: PopUpButton *
-  + «get» digits: TextField *
+BatchJob <-- BatchJobExtension
+BatchJobExtension <|-- ProcContext
+class BatchJobExtension {
+  - submitJob(): void
 }
 
-class ScenarioItem {
-  + scenario: Scenario *
-  + «get/set» view: TableCellView
-  + «get» lnView: TableCellView
-  + «get» btnsView: ButtonsCellView
-  + buttonAction(button: Button *): void
+BatchJob o-- "0.." Document
+BatchJob o--  JobController
+class BatchJob {
+  + lock: Lock *
+  + runningTrials: MutableDictionary<Number *, Document *> *
+  + availableWorlds: MutableArray<Document *> *
+  + nextTrialNumber; Integer
+  + ip4addr: Number *
+  + «get» ID: String *
+  + «get» parameters: Dictionary<String *, Number *> *
+  + «get» scenario: Array *
+  + «get» stopAt: Integer
+  + «get» nIteration: Integer
+  + runNextTrial(): void
+  - {static} theJobController: JobController
 }
 
-ScenarioItem <|-- CondElmItem
-class CondElmItem {
-  + «get/set» parent: ScenarioItem *
-}
-
-CondElmItem <|-- ComparisonItem
-class ComparisonItem {
-  + varIndex: Integer
-  + opeIndex: Integer
-  + maxValue: Integer
-  + ratioValue: Float
-  + days: Integer
-}
-
-CondElmItem <|-- CompoundItem
-class CompoundItem {
-  + «get/set» children: MutableArray<CondElmItem *> *
-  + replaceChildAtIndex(index: Integer, newChild: CondElmItem *): void
-}
-
-CondItem <|-- ScenarioItem
-class CondItem {
-  + condType: CondType
-  + destination: Integer
-  + «get/set» element: CondElmItem *
-  + «get/set» predicate: Predicate *
-  + replaceElementWithItem(newElement: CondElmItem *): void
-}
-
-class WindowController
-WindowController <|-- Scenario
-class Scenario {
-  + shiftUpBtn: Button *
-  + shiftDownBtn: Button *
-  + deselectBtn: Button *
-  + removeBtn: Button *
-  + applyBtn: Button *
-  + «get/set» outlineView: OutlineView *
-  + «get» doc: Document *
-  + «get» undoManager: UndoManager *
-  + «get» intFormatter: NumberFormatter *
-  + initWithDoc(dc: Document *): instancetype
-  + adjustControls(undoOrRedo: BOOL): void
-  + numberOfItems(): Integer
-  + removeItem(item: ScenarioItem *): void
-  + itemWithPredicate(predicate: Predicate *, parent: ScenarioItem *): CondElmItem *
-  + setScenarioWithArray(array: Array<any> *): void
-}
-
-class MyCounter {
-  + «get/set» cnt: Integer
-  + inc(): void
-  + dec(): void
-  - init(): instancetype
-  - description(): String *
-}
-
-class InfectionCntInfo <<struct>> {
-  + orgV: int
-  + newV: int
-}
-
-class InfectionExtension {
-  + valueWithInfect(info: InfectionCntInfo): Value *
-  - infectValue(): InfectionCntInfo
-}
-
-class StatInfo {
-  + _doc: Document *
-  + maxCounts: UInteger[NIntIndexes]
-  + maxTransit: UInteger[NIntIndexes]
-  + imgBm: unsigned char *
-  + popSize: Integer
-  + steps: Integer
-  + skip: Integer
-  + days: Integer
-  + skipDays: Integer
-  + statCumm: StatData
-  + transDaily: StatData
-  + transCumm: StatData
-  + testCumm: UInteger[NIntTestTypes]
-  + testResultsW: TestResultCount[7]
-  + maxStepPRate: Float
-  + maxDailyPRate: Float
-  + pRateCumm: Float
-  + phaseInfo: NSArray<NSNumber *> *
-  + scenarioPhases: MutableArray<NSNumber *> *
-  + «get» scenarioPhases: MutableArray<NSNumber *> *
-  + «get» statistics: StatData *
-  + «get» transit: StatData *
-  + «get» testResultCnt: TestResultCount
-  + «get» IncubPHist: MutableArray<MyCounter *> *
-  + «get» RecovPHist: MutableArray<MyCounter *> *
-  + «get» DeathPHist: MutableArray<MyCounter *> *
-  + «get» NInfectsHist: MutableArray<MyCounter *> *
-  + doc(): Document *
-  + reviseColors(): void
-  + reset(nPop : NSInteger, nInitInfec, :NSInteger): void
-  + setPhaseInfo(info: Array<NSNumber *> *): void
-  + phaseChangedTo(lineNumber: Integer): void
-  + calcStatWithTestCount(testCount: UInteger *, infects: NSArray<NSArray<NSValue *> *> *): BOOL
-  + skipSteps(): Integer
-  + skipDays(): Integer
-  + setDoc(doc: Document *): void
-  - init(): instancetype
-  - setDoc(docu: Document *): void
-  - fillImageForOneStep(stat: StatData *, ix: Integer): void
-  - susceptible(): Integer
-  - infected(): Integer
-  - symptomatic(): Integer
-  - recovered(): Integer
-  - died(): Integer
-  - quarantine(): Integer
-  - dailyInfection(): Integer
-  - dailySymptomatic(): Integer
-  - dailyRecovery(): Integer
-  - dailyDeath(): Integer
-  - weeklyPositive(): Integer
-  - weeklyPositiveRate(): Float
-}
-
-enum ParamType {
-  ParamTypeNone
-  ParamTypeFloat
-  ParamTypeFloatS
-  ParamTypeDist
-  ParamTypeInteger
-}
-
-class S<T> {
-  + defaultValue: T
-  + minValue: T
-  + maxValue: T
-}
-
-class St {
-  defMin: Float
-  defMode: Float
-  defMax: Float
-}
-
-class ParamInfo <<struct>> {
-  + type: ParamType
-  + key: String
-  + v: S<Float> | St | S<Integer>
-}
-
-class AppDelegate {
-  - applicationWillFinishLaunching(aNotification: Notification *): void
+JobController o-- BatchJob
+class JobController {
+  + lock: Lock *
+  + theJobs: MutableDictionary<String *, BatchJob *> *
+  + jobQueue: MutableArray<BatchJob *> *
+  + nRunningTrials: Integer
+  - init(): JobController
+  - tryNewTrial(trialFinished: BOOL): void
+  - submitJob(job: BatchJob *): void
+  - jobDidComplete(job: BatchJob *): void
+  - queueLength(): Integer
+  - nRunningTrials(): Integer
 }
 
 @enduml
